@@ -1,0 +1,14 @@
+[Core]
+Name = w3c_validate
+Module = w3c_validate
+Tests = test_w3c_validate
+
+[Nikola]
+PluginCategory = Command
+
+[Documentation]
+Author = Michael Brakemeier
+Version = 0.1
+Website = http://plugins.getnikola.com/#w3c_validate
+Description = W3C HTML Validator plugin for generated content
+
