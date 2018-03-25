@@ -27,3 +27,8 @@ This is a ported and updated version of [José Moreiras](https://github.com/zema
 or from this plugins directory
 
     $ pip install -r requirements.txt
+
+
+## Example
+
+![nikola w3c_validate](w3c_validate.png)
