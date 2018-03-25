@@ -39,13 +39,25 @@ class CommandW3CValidate(Command):
     """W3C HTML Validator plugin for generated content."""
 
     name = "w3c_validate"
+
+    errors_only = False
+
     posts_only = False
-    verbose = False
     validate_extensions = ['html']
 
-    doc_usage = "[-p, --posts] [-v, --verbose]"
-    doc_purpose = "validate generated HTML using the W3C HTML Validator service"
+    verbose = False
+
+    doc_usage = "[-p, --posts] [-v, --verbose] [-e, --errors-only]"
+    doc_purpose = "validate generated HTML using the W3C HTML Validator service."
     cmd_options = [
+        {
+            'name': 'errors-only',
+            'long': 'errors-only',
+            'short': 'e',
+            'type': bool,
+            'default': False,
+            'help': 'Show only errors.',
+        },
         {
             'name': 'posts',
             'long': 'posts',
@@ -67,10 +79,14 @@ class CommandW3CValidate(Command):
     def _execute(self, options, args):
         """W3C HTML Validator plugin for generated content."""
 
+        if options['errors-only']:
+            self.errors_only = True
+
         if options['posts']:
             self.posts_only = True
 
         if options['verbose']:
+            self.verbose = True
             self.logger.level = logbook.DEBUG
         else:
             self.logger.level = logbook.INFO
@@ -119,13 +135,12 @@ class CommandW3CValidate(Command):
 
         html_parser = HTMLParser()  # for unescaping WC3 messages
 
-        vld = HTMLValidator(verbose=self.verbose)
+        vld = HTMLValidator()
         self.logger.info("Validating: {0}".format(filename))
 
         # call w3c webservice
         vld.validate_file(filename)
 
-        self.logger.debug(vld.errors)
         # display errors, warnings and notices
         for err in vld.errors:
             self.logger.error(u'line: {0}; col: {1}; message: {2}'.
@@ -133,19 +148,18 @@ class CommandW3CValidate(Command):
                                      html_parser.unescape(err['message'])))
             self.logger.debug('extract: {0}'.format(err['extract']))
 
-        self.logger.debug(vld.warnings)
-        for err in vld.warnings:
-            self.logger.warning(u'line: {0}; col: {1}; message: {2}'.
-                                format(err['lastLine'], err['firstColumn'],
-                                       html_parser.unescape(err['message'])))
-            self.logger.debug('extract: {0}'.format(err['extract']))
+        if not self.errors_only:
+            for warn in vld.warnings:
+                self.logger.warning(u'line: {0}; col: {1}; message: {2}'.
+                                    format(warn['lastLine'], warn['firstColumn'],
+                                           html_parser.unescape(warn['message'])))
+                self.logger.debug('extract: {0}'.format(warn['extract']))
 
-        self.logger.debug(vld.info)
-        for err in vld.info:
-            self.logger.info(u'line: {0}; col: {1}; {2} - message: {3}'.
-                             format(err['lastLine'], err['firstColumn'], err['subType'],
-                                    html_parser.unescape(err['message'])))
-            self.logger.debug('extract: {0}'.format(err['extract']))
+            for info in vld.info:
+                self.logger.info(u'line: {0}; col: {1}; {2} / message: {3}'.
+                                 format(info['lastLine'], info['firstColumn'], info['subType'],
+                                        html_parser.unescape(info['message'])))
+                self.logger.debug('extract: {0}'.format(info['extract']))
 
 
     def should_validate(self, filename):
