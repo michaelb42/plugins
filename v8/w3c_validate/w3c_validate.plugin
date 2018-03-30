@@ -1,7 +1,6 @@
 [Core]
 Name = w3c_validate
 Module = w3c_validate
-Tests = test_w3c_validate
 
 [Nikola]
 PluginCategory = Command
